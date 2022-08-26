@@ -4,6 +4,7 @@ const favicon = require('serve-favicon')
 const bodyParser = require('body-parser')
 const { success, getUniqueId } = require('./helper')
 let pokemons = require('./mock-pokemon')
+const { json } = require('body-parser')
 
 const app = express()
 const port = 3000
@@ -33,8 +34,28 @@ app.post('/api/pokemons', (req, res) => {
   const id = getUniqueId(pokemons)
   const pokemonCreated = { ...req.body, ...{ id, created: new Date() } }
   pokemons.push(pokemonCreated)
-  const message = `Le pokemon ${pokemonCreated} à bien été crée.`
+  const message = `Le pokemon ${pokemonCreated.name} à bien été crée.`
   res.json(success(message, pokemonCreated))
+})
+
+app.put('/api/pokemons/:id', (req, res) => {
+
+  const id = parseInt(req.params.id)
+  const pokemonUpdated = { ...req.body, id }
+  pokemons = pokemons.map(pokemon => {
+    return pokemon.id === id ? pokemonUpdated : pokemon
+  })
+  const message = `Le pokemon ${pokemonUpdated.name} à bien été modifié.`
+  res.json(success(message, pokemonUpdated))
+})
+
+app.delete('/api/pokemons/:id', (req, res) => {
+
+  const id = parseInt(req.params.id)
+  const pokemonDeleted = pokemons.find(pokemon => pokemon.id === id)
+  pokemons = pokemons.filter(pokemon => pokemon.id !== id)
+  const message = `Le pokémon ${pokemonDeleted.name} a bien été supprimé.`
+  res.json(success(message, pokemonDeleted))
 })
 
 app.listen(port, () => console.log(`Notre app node est demarée sur : localhost ${port}`))
